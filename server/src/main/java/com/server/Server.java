@@ -79,7 +79,7 @@ public class Server implements HttpHandler {
 
         byte[] bytes = responseCoordinates.toString().getBytes("UTF-8");
 
-        if (responseCoordinates.isEmpty()){
+        if (responseCoordinates.length() == 0){
             bytes = "No coordinates".getBytes("UTF-8");          
         }
 
