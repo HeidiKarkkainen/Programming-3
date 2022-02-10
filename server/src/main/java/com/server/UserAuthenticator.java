@@ -17,12 +17,21 @@ public class UserAuthenticator extends BasicAuthenticator{
 
     public boolean checkCredentials(String username, String password){
 
-        if (username.equals("dummy") && password.equals("passwd")){
+        if (username.equals(username) && password.equals(password)){
             return true;
         } else {
             return false;
         }
+    }
 
+    public boolean addUser(String username, String password){
+
+        if (users.containsKey(username)){
+            System.out.println("existing user-not adding new one");
+            return false;
+        }
+        users.put(username, password);
+        return true; 
     }
     
 }

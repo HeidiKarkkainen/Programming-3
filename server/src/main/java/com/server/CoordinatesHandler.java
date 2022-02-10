@@ -1,6 +1,5 @@
 package com.server;
 
-
 import com.sun.net.httpserver.*;
 
 import java.io.BufferedReader;
@@ -12,11 +11,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 
-public class MyHandler implements HttpHandler {
+public class CoordinatesHandler implements HttpHandler {
 
     private ArrayList<String> coordinates;
     
-    MyHandler() {
+    CoordinatesHandler() {
          this.coordinates = new ArrayList<>();
     }
 

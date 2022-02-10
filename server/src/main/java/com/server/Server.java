@@ -29,7 +29,8 @@ public class Server {
         HttpsServer server = HttpsServer.create(new InetSocketAddress(8001),0);
 
         //create context that defines path for the resource
-        final HttpContext finalContext =  server.createContext("/coordinates", new MyHandler());
+        final HttpContext finalContext =  server.createContext("/coordinates", new CoordinatesHandler());
+        server.createContext("/registration", new RegistrationHandler(auth));
 
         finalContext.setAuthenticator(auth);
 
@@ -71,6 +72,4 @@ public class Server {
         return ssl;
     
     }
-
-
 }
