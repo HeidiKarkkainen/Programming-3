@@ -56,7 +56,7 @@ public class Server {
 
     private static SSLContext chatServerSSLContext() throws Exception{
 
-        char[] passphrase = "venetsia".toCharArray();
+        char[] passphrase = "testpass".toCharArray();
         KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(new FileInputStream("keystore.jks"), passphrase);
     
