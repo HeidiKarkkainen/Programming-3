@@ -34,7 +34,7 @@ public class Server {
 
         finalContext.setAuthenticator(auth);
 
-        SSLContext sslContext = chatServerSSLContext();
+        SSLContext sslContext = coordinatesServerSSLContext(args[0], args[1]);
 
         server.setHttpsConfigurator (new HttpsConfigurator(sslContext) {
             public void configure (HttpsParameters params) {
@@ -54,14 +54,15 @@ public class Server {
          }
     }
 
-    private static SSLContext chatServerSSLContext() throws Exception{
+    private static SSLContext coordinatesServerSSLContext(String keystore, String password) throws Exception{
 
-        char[] passphrase = "testpass".toCharArray();
+        char[] passphrase = password.toCharArray();
         KeyStore ks = KeyStore.getInstance("JKS");
-        ks.load(new FileInputStream("keystore.jks"), passphrase);
+        ks.load(new FileInputStream(keystore), passphrase);
+
     
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-        kmf.init(ks, passphrase);
+        kmf.init(ks, password.toCharArray());
     
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
         tmf.init(ks);
