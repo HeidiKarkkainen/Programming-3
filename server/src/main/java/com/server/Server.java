@@ -58,7 +58,7 @@ public class Server {
 
         char[] passphrase = "venetsia".toCharArray();
         KeyStore ks = KeyStore.getInstance("JKS");
-        ks.load(new FileInputStream("/Users/heidikarkkainen/ws/programming3/group-0092-project/server/keystore.jks"), passphrase);
+        ks.load(new FileInputStream("keystore.jks"), passphrase);
     
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
         kmf.init(ks, passphrase);
