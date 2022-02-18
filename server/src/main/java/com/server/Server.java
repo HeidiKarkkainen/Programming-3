@@ -23,7 +23,7 @@ public class Server {
 
         try {
 
-        UserAuthenticator auth = new UserAuthenticator("coordinates");
+        UserAuthenticator auth = new UserAuthenticator();
         
         //create the http server to port 8001 with default logger
         HttpsServer server = HttpsServer.create(new InetSocketAddress(8001),0);
@@ -62,7 +62,7 @@ public class Server {
 
     
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-        kmf.init(ks, password.toCharArray());
+        kmf.init(ks, passphrase);
     
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
         tmf.init(ks);

@@ -1,36 +1,44 @@
 package com.server;
 
-import java.util.Map;
-import java.util.Hashtable;
+import java.util.ArrayList;
+
 
 import com.sun.net.httpserver.*;
 
 public class UserAuthenticator extends BasicAuthenticator{
 
-    private Map<String, String> users = null;
+    private ArrayList<User> users = null;
 
-    public UserAuthenticator (String realm){
-        super(realm);
-        users = new Hashtable<String, String>();
-        users.put("dummy", "passwd");
+    public UserAuthenticator (){
+        super("coordinates");
+        users = new ArrayList<User>();
     }
 
+    @Override
     public boolean checkCredentials(String username, String password){
 
-        if (username.equals(username) && password.equals(password)){
-            return true;
-        } else {
-            return false;
+        System.out.println("checking user: " + username + " " + password + "\n");
+
+        for (int i = 0; i < users.size(); i++){
+            if (users.get(i).getUsername().equals(username) && users.get(i).getPassword().equals(password)){
+                return true;
+            }          
         }
+        return false;
     }
 
-    public boolean addUser(String username, String password){
+    public boolean addUser(String username, String password, String email){
 
-        if (users.containsKey(username)){
-            System.out.println("existing user-not adding new one");
-            return false;
+        for (int i = 0; i < users.size(); i++){
+            if (users.get(i).getUsername().equals(username)){
+                System.out.println(username + "already exists");
+                return false;
+            }
         }
-        users.put(username, password);
+
+        User registerUser = new User(username, password, email);
+        users.add(registerUser);
+        System.out.println(username + " registered");
         return true; 
     }
     
