@@ -183,8 +183,8 @@ public class CoordinatesDatabase {
         
         JSONArray array = new JSONArray();
 
-        String getCoordinatesString = "select username, longitude, latitude, time from coordinates " +
-        "where username = '" + username + "'";
+        String getCoordinatesString = "select username, longitude, latitude, time from coordinates";
+        //"where username = '" + username + "'";
 
         queryStatement = dbConnection.createStatement();
 		ResultSet rs = queryStatement.executeQuery(getCoordinatesString);
