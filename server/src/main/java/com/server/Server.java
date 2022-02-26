@@ -46,12 +46,17 @@ public class Server {
            });
 
         // creates a default executor
-        server.setExecutor(null); 
+        server.setExecutor(null);
+
+        CoordinatesDatabase db = CoordinatesDatabase.getInstance();
+        
+        db.open("/Users/heidikarkkainen/ws/programming3/group-0092-project/server/coordinates.db");
+
         server.start();
            
         } catch(Exception e){
              e.printStackTrace();
-         }
+        }
     }
 
     private static SSLContext coordinatesServerSSLContext(String keystore, String password) throws Exception{

@@ -1,45 +1,49 @@
 package com.server;
 
-import java.util.ArrayList;
-
+import java.sql.SQLException;
 
 import com.sun.net.httpserver.*;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class UserAuthenticator extends BasicAuthenticator{
 
-    private ArrayList<User> users = null;
+    private CoordinatesDatabase db = null;
 
     public UserAuthenticator (){
         super("coordinates");
-        users = new ArrayList<User>();
+        db = CoordinatesDatabase.getInstance();
     }
 
     @Override
     public boolean checkCredentials(String username, String password){
 
-        System.out.println("checking user: " + username + " " + password + "\n");
+        System.out.println("checkCredentials: checking user: " + username + " " + password + "\n");
 
-        for (int i = 0; i < users.size(); i++){
-            if (users.get(i).getUsername().equals(username) && users.get(i).getPassword().equals(password)){
-                return true;
-            }          
+        boolean isValidUser;
+        try {
+            isValidUser = db.authenticateUser(username, password);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
-        return false;
+
+        return isValidUser;
     }
 
-    public boolean addUser(String username, String password, String email){
+    public boolean addUser (String username, String password, String email) throws JSONException, SQLException{
 
-        for (int i = 0; i < users.size(); i++){
-            if (users.get(i).getUsername().equals(username)){
-                System.out.println(username + "already exists");
-                return false;
-            }
+        if (db.checkIfUserExists(username)){
+            System.out.println("user already exists");
+            return false;
+        } else {
+            System.out.println("registering user");
+            db.setUser(new JSONObject().put("username", username).put("password", password).put("email", email));
         }
-
-        User registerUser = new User(username, password, email);
-        users.add(registerUser);
         System.out.println(username + " registered");
-        return true; 
+        
+        return true;
     }
     
 }

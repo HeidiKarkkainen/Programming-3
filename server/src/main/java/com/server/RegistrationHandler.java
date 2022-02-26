@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.stream.Collectors;
 
 public class RegistrationHandler implements HttpHandler{
@@ -31,14 +32,9 @@ public class RegistrationHandler implements HttpHandler{
     public void handle(HttpExchange exchange) throws IOException {
 
         if (exchange.getRequestMethod().equalsIgnoreCase("POST")){
-            //boolean userAdded = 
+
             handlePOSTRequest(exchange);
             handlePOSTResponse(exchange);
-            //, userAdded); 
-     
-
-        // } else if (t.getRequestMethod().equalsIgnoreCase("GET")){
-        //     handleGETResponse(t, requestParamValue); 
 
         } else {
             handleResponse(exchange);
@@ -71,11 +67,6 @@ public class RegistrationHandler implements HttpHandler{
 
                 System.out.println("");
 
-                // if (newUser == null){
-                //     code = 412;
-                //     response = "not gonna work";
-                // }
-
                 try {
                     obj = new JSONObject(newUser);                 
                     System.out.println(obj);
@@ -99,8 +90,17 @@ public class RegistrationHandler implements HttpHandler{
                         response = "No proper user credentials";
                         
                     } else {
-                        System.out.println("eika tanne");
-                        boolean result = auth.addUser(obj.getString("username"), obj.getString("password"), obj.getString("email"));
+                        System.out.println("user info: " + obj.getString("username") + " " + obj.getString("password") + " " + obj.getString("email"));
+                        
+                        boolean result;
+                        try {
+                            result = auth.addUser(obj.getString("username"), obj.getString("password"), obj.getString("email"));
+                        } catch (Exception e) {
+                            System.out.println("adding user SQL statement failed"); 
+                            code = 500;
+                            return;
+                        }
+
                         if (result == false){
                             
                             code = 405;
@@ -127,9 +127,6 @@ public class RegistrationHandler implements HttpHandler{
 
     private void handlePOSTResponse(HttpExchange exchange)  throws  IOException {     
 
-        // if (userAdded){          
-        //     httpExchange.sendResponseHeaders(200, -1);
-        // } else {
             byte[] bytes = response.getBytes("UTF-8");
             exchange.sendResponseHeaders(code, bytes.length);
             OutputStream outputStream = exchange.getResponseBody();
