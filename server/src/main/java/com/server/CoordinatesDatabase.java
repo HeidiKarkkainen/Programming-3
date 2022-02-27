@@ -6,6 +6,17 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Base64;
+import java.util.concurrent.Executors;
+import java.security.SecureRandom;
+
+import org.apache.commons.codec.digest.Crypt; 
 
 import org.json.*;
 
@@ -15,6 +26,7 @@ public class CoordinatesDatabase {
     private static CoordinatesDatabase dbInstance = null;
     String dbName;
     boolean dbExists = false;
+    SecureRandom secureRandom = new SecureRandom();
 
     public static synchronized CoordinatesDatabase getInstance(){
         if (null == dbInstance){
@@ -24,6 +36,7 @@ public class CoordinatesDatabase {
     }
 
     private CoordinatesDatabase(){
+
     }
 
     public void open(String dbName) throws SQLException{
@@ -41,7 +54,7 @@ public class CoordinatesDatabase {
         }
 
         if (dbConnection == null) {
-            System.out.println("can't open database!");
+             System.out.println("can't open database!");
         }
     }
     
@@ -53,7 +66,7 @@ public class CoordinatesDatabase {
 
         if (null != dbConnection){
             String createBasicDB = "create table users (username varchar(50) NOT NULL PRIMARY KEY, password varchar(50) NOT NULL, email varchar(50));" +
-            "create table coordinates (username varchar(50) NOT NULL, longitude varchar(50) NOT NULL, latitude varchar(50) NOT NULL, time varchar(50) NOT NULL, PRIMARY KEY(username, longitude, latitude, time))";
+            "create table coordinates (username varchar(50) NOT NULL, longitude varchar(50) NOT NULL, latitude varchar(50) NOT NULL, time INTEGER NOT NULL, PRIMARY KEY(username, longitude, latitude, time))";
             Statement createStatement = dbConnection.createStatement();
             createStatement.executeUpdate(createBasicDB);
             createStatement.close();
@@ -149,6 +162,15 @@ public class CoordinatesDatabase {
 
         System.out.println("setCoordinates: " + coordinates.toString());
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+        OffsetDateTime time = null;
+        long unixTime;
+
+        time = OffsetDateTime.parse(coordinates.getString("sent"), formatter);
+        unixTime = time.toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli();
+
+        System.out.println("setCoordinates: storing unix time " + unixTime);
+ 
 		String setCoordinatesString = "insert into coordinates " +
 					"VALUES('" +
                     coordinates.getString("username") +
@@ -157,7 +179,8 @@ public class CoordinatesDatabase {
                     "','" +
                     coordinates.getString("latitude") +
                     "','" +
-                    coordinates.getString("sent") + "')"; 
+                    unixTime +
+                    "')"; 
 		Statement createStatement;
 
         try {
@@ -195,9 +218,8 @@ public class CoordinatesDatabase {
             obj.put("username", rs.getString("username"));
             obj.put("longitude", rs.getString("longitude"));
             obj.put("latitude", rs.getString("latitude"));
-            obj.put("sent", rs.getString("time"));
+            obj.put("sent", OffsetDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("time")), ZoneOffset.UTC));
             array.put(obj);
-
 		}
 
         return array;
