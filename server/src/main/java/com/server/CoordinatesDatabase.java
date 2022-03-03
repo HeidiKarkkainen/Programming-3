@@ -199,7 +199,7 @@ public class CoordinatesDatabase {
 
 
         if (coordinates.getString("description").length() == 0){
-            description = "No data";
+            description = "nodata";
         } else {
             description = coordinates.getString("description");
         }
@@ -212,9 +212,9 @@ public class CoordinatesDatabase {
                     "','" +
                     coordinates.getString("latitude") +
                     "','" +
-                    description +
-                    "','" +
                     unixTime +
+                    "','" +
+                    description +
                     "')"; 
         
         Statement createStatement;
@@ -242,7 +242,7 @@ public class CoordinatesDatabase {
         
         JSONArray array = new JSONArray();
 
-        String getCoordinatesString = "select username, longitude, latitude, time from coordinates ";
+        String getCoordinatesString = "select username, longitude, latitude, time, description from coordinates ";
         //"where username = '" + username + 
         
 
@@ -255,7 +255,9 @@ public class CoordinatesDatabase {
             obj.put("username", rs.getString("username"));
             obj.put("longitude", rs.getString("longitude"));
             obj.put("latitude", rs.getString("latitude"));
+            obj.put("description", rs.getString("description"));
             obj.put("sent", OffsetDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("time")), ZoneOffset.UTC));
+            
             array.put(obj);
 		}
         

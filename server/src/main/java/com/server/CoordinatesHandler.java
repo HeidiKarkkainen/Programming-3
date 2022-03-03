@@ -22,6 +22,9 @@ import java.time.format.DateTimeParseException;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 
+import java.util.Arrays;
+import java.util.List;
+
 
 public class CoordinatesHandler implements HttpHandler {
 
@@ -40,8 +43,8 @@ public class CoordinatesHandler implements HttpHandler {
 
         if (exchange.getRequestMethod().equalsIgnoreCase("POST")) {
 
-            handlePOSTRequest(exchange);
-            handlePOSTResponse(exchange);
+            List<Object> responseInfo= handlePOSTRequest(exchange);
+            handlePOSTResponse(exchange, responseInfo);
         }
 
         if (exchange.getRequestMethod().equalsIgnoreCase("GET")) {
@@ -52,7 +55,7 @@ public class CoordinatesHandler implements HttpHandler {
  
     }
 
-    public void handlePOSTRequest(HttpExchange exchange) throws IOException {
+    public List<Object> handlePOSTRequest(HttpExchange exchange) throws IOException {
 
         Headers headers = exchange.getRequestHeaders();
         String nick = "";
@@ -62,6 +65,8 @@ public class CoordinatesHandler implements HttpHandler {
         String description = "";
         String contentType = "";
         JSONObject obj = null;
+        String response = "";
+        int code = 0;
 
         try {
 
@@ -181,9 +186,14 @@ public class CoordinatesHandler implements HttpHandler {
             code = 500;
             response = "internal server error";
         }
+
+        return Arrays.asList(code, response);
     }
 
-    private void handlePOSTResponse(HttpExchange exchange) throws IOException {
+    private void handlePOSTResponse(HttpExchange exchange, List<Object> responseInfo) throws IOException {
+
+        int code = (int) responseInfo.get(0);
+        String response = responseInfo.get(1).toString();
 
         byte[] bytes = response.getBytes("UTF-8");
         exchange.sendResponseHeaders(code, bytes.length);
