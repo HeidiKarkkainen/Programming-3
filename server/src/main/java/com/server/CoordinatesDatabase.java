@@ -16,6 +16,7 @@ import java.util.Base64;
 import java.util.concurrent.Executors;
 import java.security.SecureRandom;
 
+
 import org.apache.commons.codec.digest.Crypt; 
 
 import org.json.*;
@@ -65,8 +66,8 @@ public class CoordinatesDatabase {
         dbConnection = DriverManager.getConnection(database);
 
         if (null != dbConnection){
-            String createBasicDB = "create table users (username varchar(50) NOT NULL PRIMARY KEY, password varchar(50) NOT NULL, email varchar(50));" +
-            "create table coordinates (username varchar(50) NOT NULL, longitude varchar(50) NOT NULL, latitude varchar(50) NOT NULL, time INTEGER NOT NULL, PRIMARY KEY(username, longitude, latitude, time))";
+            String createBasicDB = "create table users (username varchar(50) NOT NULL PRIMARY KEY, password varchar(50) NOT NULL, salt varchar(500) NOT NULL, email varchar(50));" +
+            "create table coordinates (username varchar(50) NOT NULL, longitude varchar(50) NOT NULL, latitude varchar(50) NOT NULL, time INTEGER NOT NULL, description varchar(1024), PRIMARY KEY(username, longitude, latitude, time))";
             Statement createStatement = dbConnection.createStatement();
             createStatement.executeUpdate(createBasicDB);
             createStatement.close();
@@ -82,14 +83,26 @@ public class CoordinatesDatabase {
         }
     }
 
-    public boolean setUser(JSONObject user) throws SQLException {
+    public synchronized boolean setUser(JSONObject user) throws SQLException {
 
         if(checkIfUserExists(user.getString("username"))){
             return false;
         }
 
+        byte[] bytes = new byte[13];
+        secureRandom.nextBytes(bytes);
+
+        String saltBytes = new String(Base64.getEncoder().encode(bytes));
+        String salt = "$6$" + saltBytes; 
+
+        String hashedPassword = Crypt.crypt(user.getString("password"), salt);
+
 		String setUserString = "insert into users " +
-					"VALUES('" + user.getString("username") + "','" + user.getString("password")+ "','" + user.getString("email") + "')"; 
+					"VALUES('" + user.getString("username") + 
+                    "','" + hashedPassword +
+                    "','" + salt +
+                    "','" + user.getString("email") + 
+                    "')"; 
 
                     
 		Statement createStatement;
@@ -143,17 +156,23 @@ public class CoordinatesDatabase {
 
         if(rs.next() == false){
 
-            System.out.println("cannot find such user");
+            System.out.println("AuthenticateUser: cannot find such user");
             return false;
 
         }else{
-            String pass = rs.getString("password");
+            String password = rs.getString("password");
 
-            if(pass.equals(givenPassword)){
+            if (password.equals(Crypt.crypt(givenPassword, password))) {
                 return true;
-            }else{
+            } else {
                 return false;
             }
+
+            // if(pass.equals(givenPassword)){
+            //     return true;
+            // }else{
+            //     return false;
+            // }
         }    
     }
         
@@ -169,9 +188,23 @@ public class CoordinatesDatabase {
         time = OffsetDateTime.parse(coordinates.getString("sent"), formatter);
         unixTime = time.toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli();
 
+        String description = "";
+
         System.out.println("setCoordinates: storing unix time " + unixTime);
- 
-		String setCoordinatesString = "insert into coordinates " +
+
+        double lonValue = Double.parseDouble(coordinates.getString("longitude"));
+        double latValue = Double.parseDouble(coordinates.getString("latitude"));
+        System.out.println("lonValue: " + lonValue);
+        System.out.println("latValue: " + latValue);
+
+
+        if (coordinates.getString("description").length() == 0){
+            description = "No data";
+        } else {
+            description = coordinates.getString("description");
+        }
+        
+        String setCoordinatesString = "insert into coordinates " +
 					"VALUES('" +
                     coordinates.getString("username") +
                     "','" +
@@ -179,9 +212,12 @@ public class CoordinatesDatabase {
                     "','" +
                     coordinates.getString("latitude") +
                     "','" +
+                    description +
+                    "','" +
                     unixTime +
                     "')"; 
-		Statement createStatement;
+        
+        Statement createStatement;
 
         try {
             createStatement = dbConnection.createStatement();
@@ -200,14 +236,15 @@ public class CoordinatesDatabase {
 		createStatement.close();
     }
     
-    public JSONArray getCoordinates(String username) throws SQLException {
+    public JSONArray getCoordinates() throws SQLException {
 
         Statement queryStatement = null;
         
         JSONArray array = new JSONArray();
 
-        String getCoordinatesString = "select username, longitude, latitude, time from coordinates";
-        //"where username = '" + username + "'";
+        String getCoordinatesString = "select username, longitude, latitude, time from coordinates ";
+        //"where username = '" + username + 
+        
 
         queryStatement = dbConnection.createStatement();
 		ResultSet rs = queryStatement.executeQuery(getCoordinatesString);
@@ -221,8 +258,9 @@ public class CoordinatesDatabase {
             obj.put("sent", OffsetDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("time")), ZoneOffset.UTC));
             array.put(obj);
 		}
-
+        
         return array;
 
     }
+
 }

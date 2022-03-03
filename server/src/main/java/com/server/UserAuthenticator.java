@@ -22,6 +22,7 @@ public class UserAuthenticator extends BasicAuthenticator{
         System.out.println("checkCredentials: checking user: " + username + " " + password + "\n");
 
         boolean isValidUser;
+        
         try {
             isValidUser = db.authenticateUser(username, password);
         } catch (SQLException e) {

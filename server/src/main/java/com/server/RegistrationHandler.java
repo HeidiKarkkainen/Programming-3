@@ -78,9 +78,18 @@ public class RegistrationHandler implements HttpHandler{
                          System.out.println("menee tannekin");
                          code = 412;
                          response = "No user credentials";
-                    }
-                
-                else {
+                } else if (obj.getString("username").equalsIgnoreCase("SELECT") || 
+                    obj.getString("username").equalsIgnoreCase("WHERE") ||
+                    obj.getString("username").equalsIgnoreCase("FROM") ||
+                    obj.getString("username").equalsIgnoreCase("CREATE TABLE") ||
+                    obj.getString("username").equalsIgnoreCase("DROP TABLE") ||
+                    obj.getString("username").equalsIgnoreCase("INSERT") ||
+                    obj.getString("username").equalsIgnoreCase("UPDATE") ||
+                    obj.getString("username").equalsIgnoreCase("DELETE") ||
+                    obj.getString("username").equals("*")){
+                    code = 400;
+                    response = "Not allowed username";               
+                } else {
                 
                     System.out.println("enta tanne");
                     
@@ -112,13 +121,12 @@ public class RegistrationHandler implements HttpHandler{
                             response = "User registered";
                         }
                     }
-                }
-            
+                } 
             } else {
                 code = 407;
                 response = "Content type is not application/json.";
             }
-
+        
         } catch (Exception e){
             code = 500;
             response = "internal server error";
