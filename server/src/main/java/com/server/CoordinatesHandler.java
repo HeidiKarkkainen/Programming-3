@@ -32,11 +32,7 @@ public class CoordinatesHandler implements HttpHandler {
 
     CoordinatesHandler() {
         //this.coordinates = new ArrayList<>();
-    }
-
-    String response = "";
-    int code = 0;
-    
+    }    
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -49,8 +45,8 @@ public class CoordinatesHandler implements HttpHandler {
 
         if (exchange.getRequestMethod().equalsIgnoreCase("GET")) {
 
-            handleGETrequest(exchange);
-            handleGETresponse(exchange);
+            List<Object> responseInfo = handleGETrequest(exchange);
+            handleGETresponse(exchange, responseInfo);
         }
  
     }
@@ -204,7 +200,10 @@ public class CoordinatesHandler implements HttpHandler {
 
     }
 
-    private void handleGETrequest(HttpExchange exchange) throws IOException {
+    private List<Object> handleGETrequest(HttpExchange exchange) throws IOException {
+
+        int code = 0;
+        String response = "";
 
         try {
 
@@ -221,9 +220,14 @@ public class CoordinatesHandler implements HttpHandler {
             code = 500;
             response = "internal server error";
         }
+
+        return Arrays.asList(code, response);
     }
 
-    private void handleGETresponse(HttpExchange exchange) throws IOException {
+    private void handleGETresponse(HttpExchange exchange, List<Object> responseInfo) throws IOException {
+
+        int code = (int) responseInfo.get(0);
+        String response = responseInfo.get(1).toString();
 
         byte[] bytes = response.getBytes("UTF-8");
         exchange.sendResponseHeaders(code, bytes.length);

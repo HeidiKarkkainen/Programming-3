@@ -103,8 +103,7 @@ public class CoordinatesDatabase {
                     "','" + salt +
                     "','" + user.getString("email") + 
                     "')"; 
-
-                    
+         
 		Statement createStatement;
 		createStatement = dbConnection.createStatement();
 		createStatement.executeUpdate(setUserString);
@@ -160,6 +159,7 @@ public class CoordinatesDatabase {
             return false;
 
         }else{
+
             String password = rs.getString("password");
 
             if (password.equals(Crypt.crypt(givenPassword, password))) {
@@ -167,12 +167,6 @@ public class CoordinatesDatabase {
             } else {
                 return false;
             }
-
-            // if(pass.equals(givenPassword)){
-            //     return true;
-            // }else{
-            //     return false;
-            // }
         }    
     }
         

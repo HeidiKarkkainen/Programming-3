@@ -22,7 +22,7 @@ public class UserAuthenticator extends BasicAuthenticator{
         System.out.println("checkCredentials: checking user: " + username + " " + password + "\n");
 
         boolean isValidUser;
-        
+
         try {
             isValidUser = db.authenticateUser(username, password);
         } catch (SQLException e) {
@@ -35,15 +35,15 @@ public class UserAuthenticator extends BasicAuthenticator{
 
     public boolean addUser (String username, String password, String email) throws JSONException, SQLException{
 
-        if (db.checkIfUserExists(username)){
+        boolean added = db.setUser(new JSONObject().put("username", username).put("password", password).put("email", email));
+
+        if (!added){
             System.out.println("user already exists");
             return false;
-        } else {
-            System.out.println("registering user");
-            db.setUser(new JSONObject().put("username", username).put("password", password).put("email", email));
-        }
-        System.out.println(username + " registered");
+        }    
         
+        System.out.println(username + " registered");  
+           
         return true;
     }
     

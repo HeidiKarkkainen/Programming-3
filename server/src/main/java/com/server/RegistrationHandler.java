@@ -14,6 +14,9 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.stream.Collectors;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class RegistrationHandler implements HttpHandler{
 
     private UserAuthenticator auth;
@@ -23,27 +26,26 @@ public class RegistrationHandler implements HttpHandler{
         auth = newAuth;
     }
 
-    String contentType = "";
-    String response = "";
-    int code = 0;
-    JSONObject obj = null;
-    
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
         if (exchange.getRequestMethod().equalsIgnoreCase("POST")){
 
-            handlePOSTRequest(exchange);
-            handlePOSTResponse(exchange);
+            List<Object> responseInfo = handlePOSTRequest(exchange);
+            handlePOSTResponse(exchange, responseInfo);
 
         } else {
             handleResponse(exchange);
         }       
     }        
     
-    public void handlePOSTRequest(HttpExchange exchange)throws IOException {
+    public List<Object> handlePOSTRequest(HttpExchange exchange)throws IOException {
 
         Headers headers = exchange.getRequestHeaders();
+        String contentType = "";
+        JSONObject obj = null;
+        String response = "";
+        int code = 0;
 
         try {
 
@@ -107,7 +109,8 @@ public class RegistrationHandler implements HttpHandler{
                         } catch (Exception e) {
                             System.out.println("adding user SQL statement failed"); 
                             code = 500;
-                            return;
+                            response = "Unable to add user to database";
+                            return Arrays.asList(code, response);
                         }
 
                         if (result == false){
@@ -131,9 +134,14 @@ public class RegistrationHandler implements HttpHandler{
             code = 500;
             response = "internal server error";
         }
+
+        return Arrays.asList(code, response);
     }
 
-    private void handlePOSTResponse(HttpExchange exchange)  throws  IOException {     
+    private void handlePOSTResponse(HttpExchange exchange, List<Object> responseInfo)  throws  IOException {     
+
+            int code = (int) responseInfo.get(0);
+            String response = responseInfo.get(1).toString();
 
             byte[] bytes = response.getBytes("UTF-8");
             exchange.sendResponseHeaders(code, bytes.length);
