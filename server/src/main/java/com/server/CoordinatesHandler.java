@@ -79,11 +79,11 @@ public class CoordinatesHandler implements HttpHandler {
 
                 try {
                     obj = new JSONObject(newCoordinates);
-                    nick = obj.getString("username");
-                    longitude = obj.getDouble("longitude");
-                    latitude = obj.getDouble("latitude");
-                    timestamp = obj.getString("sent");
-                    description = obj.getString("description");
+                    // nick = obj.getString("username");
+                    // longitude = obj.getDouble("longitude");
+                    // latitude = obj.getDouble("latitude");
+                    // timestamp = obj.getString("sent");
+                    // description = obj.getString("description");
 
                 } catch (JSONException e) {
                     System.out.println("json parse error, faulty user json");

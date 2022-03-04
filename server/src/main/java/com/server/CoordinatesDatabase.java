@@ -66,7 +66,7 @@ public class CoordinatesDatabase {
 
         if (null != dbConnection){
             String createBasicDB = "create table users (username varchar(50) NOT NULL PRIMARY KEY, password varchar(50) NOT NULL, salt varchar(500) NOT NULL, email varchar(50));" +
-            "create table coordinates (nick varchar(50) NOT NULL, longitude number NOT NULL, latitude number NOT NULL, time INTEGER NOT NULL, description varchar(1024), PRIMARY KEY(nick, longitude, latitude, time))";
+            "create table coordinates (nick varchar(50) NOT NULL, longitude number NOT NULL, latitude number NOT NULL, time INTEGER NOT NULL, PRIMARY KEY(nick, longitude, latitude, time))";
             Statement createStatement = dbConnection.createStatement();
             createStatement.executeUpdate(createBasicDB);
             createStatement.close();
@@ -175,28 +175,45 @@ public class CoordinatesDatabase {
         // coordinates.getDouble("longitude");
         // coordinates.getDouble("latitude");
 
-        try {
-            description = coordinates.getString("description");
-            if (description.length() == 0){
-                description = "nodata";
-            }
-        } catch (JSONException e) {
-            description = "nodata";
-        }
+        // try {
+        //     description = coordinates.getString("description");
+        //     if (description.length() == 0){
+        //         description = "nodata";
+        //     }
+        // } catch (JSONException e) {
+        //     description = "";
+        // }
         
-        String setCoordinatesString = "insert into coordinates " +
-					"VALUES('" +
-                    coordinates.getString("username") +
-                    "','" +
-                    coordinates.getDouble("longitude") +
-                    "','" +
-                    coordinates.getDouble("latitude") +
-                    "','" +
-                    unixTime +
-                    "','" +
-                    description +
-                    "')"; 
-        
+        // String setCoordinatesString;
+
+        // if (description != "") {
+        //     setCoordinatesString = "insert into coordinates " +
+        //                 "VALUES('" +
+        //                 coordinates.getString("username") +
+        //                 "','" +
+        //                 coordinates.getDouble("longitude") +
+        //                 "','" +
+        //                 coordinates.getDouble("latitude") +
+        //                 "','" +
+        //                 unixTime +
+        //                 "','" +
+        //                 description +
+        //                 "')"; 
+        // } else {
+            String setCoordinatesString = "insert into coordinates " +
+            "VALUES('" +
+            coordinates.getString("username") +
+            "','" +
+            coordinates.getDouble("longitude") +
+            "','" +
+            coordinates.getDouble("latitude") +
+            "','" +
+            unixTime +
+            "')"; 
+        //}
+
+        System.out.println("setCoordinates: " + setCoordinatesString);
+
         Statement createStatement;
 
         try {
@@ -232,7 +249,7 @@ public class CoordinatesDatabase {
             obj.put("nick", rs.getString("nick"));
             obj.put("longitude", rs.getDouble("longitude"));
             obj.put("latitude", rs.getDouble("latitude"));
-            obj.put("description", rs.getString("description"));
+            //obj.put("description", rs.getString("description"));
             obj.put("sent", OffsetDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("time")), ZoneOffset.UTC));
             
             array.put(obj);
@@ -271,7 +288,7 @@ public class CoordinatesDatabase {
             obj.put("nick", rs.getString("nick"));
             obj.put("longitude", rs.getDouble("longitude"));
             obj.put("latitude", rs.getDouble("latitude"));
-            obj.put("description", rs.getString("description"));
+            //obj.put("description", rs.getString("description"));
             obj.put("sent", OffsetDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("time")), ZoneOffset.UTC));
             
             array.put(obj);
@@ -296,7 +313,7 @@ public class CoordinatesDatabase {
             obj.put("nick", rs.getString("nick"));
             obj.put("longitude", rs.getDouble("longitude"));
             obj.put("latitude", rs.getDouble("latitude"));
-            obj.put("description", rs.getString("description"));
+            //obj.put("description", rs.getString("description"));
             obj.put("sent", OffsetDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("time")), ZoneOffset.UTC));            
             array.put(obj);
 		}
