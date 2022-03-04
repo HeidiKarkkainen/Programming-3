@@ -99,10 +99,10 @@ public class CoordinatesHandler implements HttpHandler {
                     code = 413;
                     response = "Coordinate(s) missing";
 
-                } else if (longitude < -180 || longitude > 180 ||
-                            latitude < -90 || latitude > 90) {
-                    code = 400;
-                    response = "Not a real coordinate";
+                // } else if (longitude < -180 || longitude > 180 ||
+                //             latitude < -90 || latitude > 90) {
+                //     code = 400;
+                //     response = "Not a real coordinate";
 
                 } else {  
 
