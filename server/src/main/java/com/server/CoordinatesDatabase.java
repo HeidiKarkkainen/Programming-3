@@ -1,21 +1,20 @@
 package com.server;
 
 import java.io.File;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Base64;
-import java.util.concurrent.Executors;
-import java.security.SecureRandom;
 
+import java.security.SecureRandom;
 
 import org.apache.commons.codec.digest.Crypt; 
 
@@ -55,7 +54,7 @@ public class CoordinatesDatabase {
         }
 
         if (dbConnection == null) {
-             System.out.println("can't open database!");
+            System.out.println("can't open database!");
         }
     }
     
@@ -67,7 +66,7 @@ public class CoordinatesDatabase {
 
         if (null != dbConnection){
             String createBasicDB = "create table users (username varchar(50) NOT NULL PRIMARY KEY, password varchar(50) NOT NULL, salt varchar(500) NOT NULL, email varchar(50));" +
-            "create table coordinates (username varchar(50) NOT NULL, longitude varchar(50) NOT NULL, latitude varchar(50) NOT NULL, time INTEGER NOT NULL, description varchar(1024), PRIMARY KEY(username, longitude, latitude, time))";
+            "create table coordinates (nick varchar(50) NOT NULL, longitude varchar(50) NOT NULL, latitude varchar(50) NOT NULL, time INTEGER NOT NULL, description varchar(1024), PRIMARY KEY(nick, longitude, latitude, time))";
             Statement createStatement = dbConnection.createStatement();
             createStatement.executeUpdate(createBasicDB);
             createStatement.close();
@@ -122,14 +121,14 @@ public class CoordinatesDatabase {
         try {
             queryStatement = dbConnection.createStatement();
         } catch (SQLException e) {
-            System.out.println("checkIfUserExists: db connection failed");
+            System.out.println("db connection failed");
             throw e;
         }
 
         try {
             rs = queryStatement.executeQuery(checkUser);            
         } catch (Exception e) {
-            System.out.println("checkIfUserExists: query failed");
+            System.out.println("query failed");
             throw e;
         }
 
@@ -154,15 +153,10 @@ public class CoordinatesDatabase {
 		rs = queryStatement.executeQuery(getMessagesString);
 
         if(rs.next() == false){
-
-            System.out.println("AuthenticateUser: cannot find such user");
             return false;
-
-        }else{
-
+        }else {
             String password = rs.getString("password");
-
-            if (password.equals(Crypt.crypt(givenPassword, password))) {
+           if (password.equals(Crypt.crypt(givenPassword, password))) {
                 return true;
             } else {
                 return false;
@@ -170,27 +164,18 @@ public class CoordinatesDatabase {
         }    
     }
         
-
     public void setCoordinates(JSONObject coordinates) throws SQLException {
-
-        System.out.println("setCoordinates: " + coordinates.toString());
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
         OffsetDateTime time = null;
         long unixTime;
+        String description = "";
 
         time = OffsetDateTime.parse(coordinates.getString("sent"), formatter);
         unixTime = time.toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli();
-
-        String description = "";
-
-        System.out.println("setCoordinates: storing unix time " + unixTime);
-
-        double lonValue = Double.parseDouble(coordinates.getString("longitude"));
-        double latValue = Double.parseDouble(coordinates.getString("latitude"));
-        System.out.println("lonValue: " + lonValue);
-        System.out.println("latValue: " + latValue);
-
+       
+        Double.parseDouble(coordinates.getString("longitude"));
+        Double.parseDouble(coordinates.getString("latitude"));
 
         if (coordinates.getString("description").length() == 0){
             description = "nodata";
@@ -217,14 +202,14 @@ public class CoordinatesDatabase {
             createStatement = dbConnection.createStatement();
             
         } catch (Exception e) {
-            System.out.println("setCoordinates: dbConnection.createStatement FAILED");
+            System.out.println("dbConnection.createStatement FAILED");
             throw e;
         }
         try {
             createStatement.executeUpdate(setCoordinatesString);
             
         } catch (Exception e) {
-            System.out.println("setCoordinates: createStatement.executeUpdate FAILED");
+            System.out.println("createStatement.executeUpdate FAILED");
             throw e;
         }
 		createStatement.close();
@@ -236,17 +221,14 @@ public class CoordinatesDatabase {
         
         JSONArray array = new JSONArray();
 
-        String getCoordinatesString = "select username, longitude, latitude, time, description from coordinates ";
-        //"where username = '" + username + 
-        
+        String getCoordinatesString = "select nick, longitude, latitude, time, description from coordinates ";
 
         queryStatement = dbConnection.createStatement();
 		ResultSet rs = queryStatement.executeQuery(getCoordinatesString);
 
         while (rs.next()) {
             JSONObject obj = new JSONObject();
-            //obj.put("id", rs.getInt("rowid"));
-            obj.put("username", rs.getString("username"));
+            obj.put("nick", rs.getString("nick"));
             obj.put("longitude", rs.getString("longitude"));
             obj.put("latitude", rs.getString("latitude"));
             obj.put("description", rs.getString("description"));
@@ -259,4 +241,65 @@ public class CoordinatesDatabase {
 
     }
 
+    public JSONArray getCoordinates2(JSONObject timequery) throws SQLException {
+
+        Statement queryStatement = null;
+        
+        JSONArray array = new JSONArray();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+        OffsetDateTime startTime = null;
+        OffsetDateTime endTime = null;
+        long unixTime1;
+        long unixTime2;
+
+        startTime = OffsetDateTime.parse(timequery.getString("timestart"), formatter);
+        unixTime1 = startTime.toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli();
+
+        endTime = OffsetDateTime.parse(timequery.getString("timeend"), formatter);
+        unixTime2 = endTime.toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli();
+
+        String getCoordinatesString = "select nick, longitude, latitude, time, description from coordinates " +
+        "where time between '" + unixTime1 + "'AND'" + unixTime2 + "'"; 
+        
+        queryStatement = dbConnection.createStatement();
+		ResultSet rs = queryStatement.executeQuery(getCoordinatesString);
+
+        while (rs.next()) {
+            JSONObject obj = new JSONObject();
+            obj.put("nick", rs.getString("nick"));
+            obj.put("longitude", rs.getString("longitude"));
+            obj.put("latitude", rs.getString("latitude"));
+            obj.put("description", rs.getString("description"));
+            obj.put("sent", OffsetDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("time")), ZoneOffset.UTC));
+            
+            array.put(obj);
+		}
+        return array;
+    }
+
+    public JSONArray getCoordinates3(String name) throws SQLException {
+
+        Statement queryStatement = null;
+        
+        JSONArray array = new JSONArray();
+
+        String getCoordinatesString = "select nick, longitude, latitude, time, description from coordinates " +
+        "where nick = '" + name + "'"; 
+        
+        queryStatement = dbConnection.createStatement();
+		ResultSet rs = queryStatement.executeQuery(getCoordinatesString);
+
+        while (rs.next()) {
+            JSONObject obj = new JSONObject();
+            obj.put("nick", rs.getString("nick"));
+            obj.put("longitude", rs.getString("longitude"));
+            obj.put("latitude", rs.getString("latitude"));
+            obj.put("description", rs.getString("description"));
+            obj.put("sent", OffsetDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("time")), ZoneOffset.UTC));            
+            array.put(obj);
+		}
+        
+        return array;
+    }
 }

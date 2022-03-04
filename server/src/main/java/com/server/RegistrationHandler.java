@@ -11,9 +11,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
-import java.util.stream.Collectors;
 
+import java.util.stream.Collectors;
 import java.util.Arrays;
 import java.util.List;
 
@@ -77,33 +76,19 @@ public class RegistrationHandler implements HttpHandler{
                 }
                     
                 if (obj.getString("username").length() == 0){
-                         System.out.println("menee tannekin");
-                         code = 412;
-                         response = "No user credentials";
-                } else if (obj.getString("username").equalsIgnoreCase("SELECT") || 
-                    obj.getString("username").equalsIgnoreCase("WHERE") ||
-                    obj.getString("username").equalsIgnoreCase("FROM") ||
-                    obj.getString("username").equalsIgnoreCase("CREATE TABLE") ||
-                    obj.getString("username").equalsIgnoreCase("DROP TABLE") ||
-                    obj.getString("username").equalsIgnoreCase("INSERT") ||
-                    obj.getString("username").equalsIgnoreCase("UPDATE") ||
-                    obj.getString("username").equalsIgnoreCase("DELETE") ||
-                    obj.getString("username").equals("*")){
-                    code = 400;
-                    response = "Not allowed username";               
+                    code = 412;
+                    response = "No user credentials";
+             
                 } else {
-                
-                    System.out.println("enta tanne");
-                    
+ 
                     if (obj.getString("username").length() == 0 || obj.getString("password").length() == 0 || obj.getString("email").length() == 0 ){
-                        System.out.println("mutta ei tanne");
                         code = 413;
                         response = "No proper user credentials";
                         
                     } else {
-                        System.out.println("user info: " + obj.getString("username") + " " + obj.getString("password") + " " + obj.getString("email"));
                         
                         boolean result;
+
                         try {
                             result = auth.addUser(obj.getString("username"), obj.getString("password"), obj.getString("email"));
                         } catch (Exception e) {
@@ -114,13 +99,10 @@ public class RegistrationHandler implements HttpHandler{
                         }
 
                         if (result == false){
-                            
                             code = 405;
                             response = "user already exists";
-                        } else {
-                            
+                        } else {                       
                             code = 200;
-                            System.out.println("User registered");
                             response = "User registered";
                         }
                     }
@@ -148,8 +130,7 @@ public class RegistrationHandler implements HttpHandler{
             OutputStream outputStream = exchange.getResponseBody();
             outputStream.write(bytes);
             outputStream.flush();
-            outputStream.close();
-        
+            outputStream.close();    
     }
 
     private void handleResponse(HttpExchange httpExchange)  throws  IOException {
@@ -162,6 +143,5 @@ public class RegistrationHandler implements HttpHandler{
         outputStream.write(bytes);
         outputStream.flush();
         outputStream.close();        
-    }   
-    
+    }      
 }

@@ -49,7 +49,7 @@ public class Server {
             }
            });
 
-        // creates a default executor
+        
         server.setExecutor(Executors.newCachedThreadPool());
 
         CoordinatesDatabase db = CoordinatesDatabase.getInstance();
@@ -92,7 +92,6 @@ public class Server {
         SSLContext ssl = SSLContext.getInstance("TLS");
         ssl.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
 
-        return ssl;
-    
+        return ssl;  
     }
 }

@@ -1,7 +1,5 @@
 package com.server;
 
-import org.json.JSONObject;
-
 public class UserCoordinate {
 
     public String nick;
@@ -32,13 +30,9 @@ public class UserCoordinate {
 
     public String getTimestamp(){
         return this.timestamp;
-
     }
 
     public String getDescription(){
         return this.description;
     }
-
- 
-
 }

@@ -19,8 +19,6 @@ public class UserAuthenticator extends BasicAuthenticator{
     @Override
     public boolean checkCredentials(String username, String password){
 
-        System.out.println("checkCredentials: checking user: " + username + " " + password + "\n");
-
         boolean isValidUser;
 
         try {
