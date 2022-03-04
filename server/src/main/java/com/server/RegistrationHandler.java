@@ -60,7 +60,6 @@ public class RegistrationHandler implements HttpHandler{
             System.out.println("Content-type is: " + contentType);
 
             if (contentType.equalsIgnoreCase("application/json")){
-                System.out.println("menee tanne");
                 InputStream stream = exchange.getRequestBody();
 
                 String newUser = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")); 

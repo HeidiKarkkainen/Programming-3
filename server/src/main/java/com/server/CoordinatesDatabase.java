@@ -133,10 +133,8 @@ public class CoordinatesDatabase {
         }
 
         if(rs.next()){
-            System.out.println("user exists");
             return true;
         }else{
-            System.out.println("added user " + givenUsername);
             return false;
         }
         
@@ -177,10 +175,13 @@ public class CoordinatesDatabase {
         // coordinates.getDouble("longitude");
         // coordinates.getDouble("latitude");
 
-        if (coordinates.getString("description").length() == 0){
-            description = "nodata";
-        } else {
+        try {
             description = coordinates.getString("description");
+            if (description.length() == 0){
+                description = "nodata";
+            }
+        } catch (JSONException e) {
+            description = "nodata";
         }
         
         String setCoordinatesString = "insert into coordinates " +
