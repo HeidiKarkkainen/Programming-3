@@ -80,8 +80,8 @@ public class CoordinatesHandler implements HttpHandler {
                 try {
                     obj = new JSONObject(newCoordinates);
                     nick = obj.getString("username");
-                    longitude = Double.valueOf(obj.getString("longitude"));
-                    latitude = Double.valueOf(obj.getString("latitude"));
+                    longitude = obj.getDouble("longitude");
+                    latitude = obj.getDouble("latitude");
                     timestamp = obj.getString("sent");
                     description = obj.getString("description");
 
@@ -95,9 +95,9 @@ public class CoordinatesHandler implements HttpHandler {
                     code = 412;
                     response = "No user credentials";        
                 
-                } else if (obj.getString("longitude").length() == 0 || obj.getString("latitude").length() == 0) {
-                    code = 413;
-                    response = "Coordinate(s) missing";
+                // } else if (obj.getDouble("longitude").length() == 0 || obj.getString("latitude").length() == 0) {
+                //     code = 413;
+                //     response = "Coordinate(s) missing";
 
                 // } else if (longitude < -180 || longitude > 180 ||
                 //             latitude < -90 || latitude > 90) {
@@ -107,12 +107,12 @@ public class CoordinatesHandler implements HttpHandler {
                 } else {  
 
                     try{
-                        UserCoordinate c = new UserCoordinate(nick, latitude, longitude, timestamp, description);
+                        //UserCoordinate c = new UserCoordinate(nick, latitude, longitude, timestamp, description);
                         CoordinatesDatabase.getInstance().setCoordinates(obj);
                         code = 200;
                         response = "Coordinates added";
 
-                    } catch(NumberFormatException e){
+                    } catch(JSONException e){
                         code = 400;
                         response = "Bad request";
                         System.out.println("Not a double");

@@ -66,7 +66,7 @@ public class CoordinatesDatabase {
 
         if (null != dbConnection){
             String createBasicDB = "create table users (username varchar(50) NOT NULL PRIMARY KEY, password varchar(50) NOT NULL, salt varchar(500) NOT NULL, email varchar(50));" +
-            "create table coordinates (nick varchar(50) NOT NULL, longitude varchar(50) NOT NULL, latitude varchar(50) NOT NULL, time INTEGER NOT NULL, description varchar(1024), PRIMARY KEY(nick, longitude, latitude, time))";
+            "create table coordinates (nick varchar(50) NOT NULL, longitude number NOT NULL, latitude number NOT NULL, time INTEGER NOT NULL, description varchar(1024), PRIMARY KEY(nick, longitude, latitude, time))";
             Statement createStatement = dbConnection.createStatement();
             createStatement.executeUpdate(createBasicDB);
             createStatement.close();
@@ -164,7 +164,7 @@ public class CoordinatesDatabase {
         }    
     }
         
-    public void setCoordinates(JSONObject coordinates) throws SQLException {
+    public void setCoordinates(JSONObject coordinates) throws SQLException, JSONException {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
         OffsetDateTime time = null;
@@ -174,8 +174,8 @@ public class CoordinatesDatabase {
         time = OffsetDateTime.parse(coordinates.getString("sent"), formatter);
         unixTime = time.toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli();
        
-        Double.parseDouble(coordinates.getString("longitude"));
-        Double.parseDouble(coordinates.getString("latitude"));
+        // coordinates.getDouble("longitude");
+        // coordinates.getDouble("latitude");
 
         if (coordinates.getString("description").length() == 0){
             description = "nodata";
@@ -187,9 +187,9 @@ public class CoordinatesDatabase {
 					"VALUES('" +
                     coordinates.getString("username") +
                     "','" +
-                    coordinates.getString("longitude") +
+                    coordinates.getDouble("longitude") +
                     "','" +
-                    coordinates.getString("latitude") +
+                    coordinates.getDouble("latitude") +
                     "','" +
                     unixTime +
                     "','" +
@@ -229,8 +229,8 @@ public class CoordinatesDatabase {
         while (rs.next()) {
             JSONObject obj = new JSONObject();
             obj.put("nick", rs.getString("nick"));
-            obj.put("longitude", rs.getString("longitude"));
-            obj.put("latitude", rs.getString("latitude"));
+            obj.put("longitude", rs.getDouble("longitude"));
+            obj.put("latitude", rs.getDouble("latitude"));
             obj.put("description", rs.getString("description"));
             obj.put("sent", OffsetDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("time")), ZoneOffset.UTC));
             
@@ -268,8 +268,8 @@ public class CoordinatesDatabase {
         while (rs.next()) {
             JSONObject obj = new JSONObject();
             obj.put("nick", rs.getString("nick"));
-            obj.put("longitude", rs.getString("longitude"));
-            obj.put("latitude", rs.getString("latitude"));
+            obj.put("longitude", rs.getDouble("longitude"));
+            obj.put("latitude", rs.getDouble("latitude"));
             obj.put("description", rs.getString("description"));
             obj.put("sent", OffsetDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("time")), ZoneOffset.UTC));
             
@@ -293,8 +293,8 @@ public class CoordinatesDatabase {
         while (rs.next()) {
             JSONObject obj = new JSONObject();
             obj.put("nick", rs.getString("nick"));
-            obj.put("longitude", rs.getString("longitude"));
-            obj.put("latitude", rs.getString("latitude"));
+            obj.put("longitude", rs.getDouble("longitude"));
+            obj.put("latitude", rs.getDouble("latitude"));
             obj.put("description", rs.getString("description"));
             obj.put("sent", OffsetDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("time")), ZoneOffset.UTC));            
             array.put(obj);
