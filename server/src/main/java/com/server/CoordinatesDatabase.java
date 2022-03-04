@@ -239,7 +239,7 @@ public class CoordinatesDatabase {
         
         JSONArray array = new JSONArray();
 
-        String getCoordinatesString = "select nick, longitude, latitude, time, description from coordinates ";
+        String getCoordinatesString = "select nick, longitude, latitude, time from coordinates ";
 
         queryStatement = dbConnection.createStatement();
 		ResultSet rs = queryStatement.executeQuery(getCoordinatesString);
