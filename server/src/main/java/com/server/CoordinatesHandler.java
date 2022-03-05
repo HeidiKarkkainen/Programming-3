@@ -62,7 +62,6 @@ public class CoordinatesHandler implements HttpHandler {
 
             if (headers.containsKey("Content-Type")) {
                 contentType = headers.get("Content-Type").get(0);
-                System.out.println("Content-type available");
             } else {
                 System.out.println("No Content-Type");
                 code = 411;

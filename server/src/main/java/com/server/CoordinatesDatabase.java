@@ -169,6 +169,8 @@ public class CoordinatesDatabase {
         long unixTime;
         String description = "";
 
+        System.out.println("setCoordinates: request: " + coordinates.toString());
+
         time = OffsetDateTime.parse(coordinates.getString("sent"), formatter);
         unixTime = time.toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli();
        
@@ -212,22 +214,20 @@ public class CoordinatesDatabase {
             "')"; 
         //}
 
-        System.out.println("setCoordinates: " + setCoordinatesString);
-
         Statement createStatement;
 
         try {
             createStatement = dbConnection.createStatement();
             
         } catch (Exception e) {
-            System.out.println("dbConnection.createStatement FAILED");
+            System.out.println("setCoordinates: dbConnection.createStatement failed");
             throw e;
         }
         try {
             createStatement.executeUpdate(setCoordinatesString);
             
         } catch (Exception e) {
-            System.out.println("createStatement.executeUpdate FAILED");
+            System.out.println("setCoordinates: createStatement.executeUpdate failed");
             throw e;
         }
 		createStatement.close();
@@ -254,6 +254,8 @@ public class CoordinatesDatabase {
             
             array.put(obj);
 		}
+
+        System.out.println("getCoordinates: response: " + array.toString());
         
         return array;
 
