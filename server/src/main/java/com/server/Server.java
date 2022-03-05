@@ -6,18 +6,16 @@ import com.sun.net.httpserver.HttpsServer;
 import com.sun.net.httpserver.HttpsParameters;
 
 import java.io.*;
-
 import java.net.InetSocketAddress;
 import java.security.KeyStore;
+
 import java.util.concurrent.Executors;
+import java.util.Scanner;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
-
-import java.util.Scanner;
-
 
 public class Server {
 
@@ -27,49 +25,48 @@ public class Server {
 
         try {
 
-        UserAuthenticator auth = new UserAuthenticator();
-        
-        //create the http server to port 8001 with default logger
-        HttpsServer server = HttpsServer.create(new InetSocketAddress(8001),0);
+            UserAuthenticator auth = new UserAuthenticator();
+            
+            //creates the http server to port 8001 with default logger
+            HttpsServer server = HttpsServer.create(new InetSocketAddress(8001),0);
 
-        //create context that defines path for the resource
-        final HttpContext finalContext =  server.createContext("/coordinates", new CoordinatesHandler());
-        server.createContext("/registration", new RegistrationHandler(auth));
+            //creates contexts that defines paths for the resources
+            final HttpContext finalContext =  server.createContext("/coordinates", new CoordinatesHandler());
+            server.createContext("/registration", new RegistrationHandler(auth));
 
-        finalContext.setAuthenticator(auth);
+            finalContext.setAuthenticator(auth);
 
-        SSLContext sslContext = coordinatesServerSSLContext(args[0], args[1]);
+            SSLContext sslContext = coordinatesServerSSLContext(args[0], args[1]);
 
-        server.setHttpsConfigurator (new HttpsConfigurator(sslContext) {
-            public void configure (HttpsParameters params) {
-            InetSocketAddress remote = params.getClientAddress();
-            SSLContext c = getSSLContext();
-            SSLParameters sslparams = c.getDefaultSSLParameters();
-            params.setSSLParameters(sslparams);
+            server.setHttpsConfigurator (new HttpsConfigurator(sslContext) {
+                public void configure (HttpsParameters params) {
+                InetSocketAddress remote = params.getClientAddress();
+                SSLContext c = getSSLContext();
+                SSLParameters sslparams = c.getDefaultSSLParameters();
+                params.setSSLParameters(sslparams);
+                }
+            });
+         
+            server.setExecutor(Executors.newCachedThreadPool());
+
+            CoordinatesDatabase db = CoordinatesDatabase.getInstance();
+            
+            db.open("coordinates.db");
+
+            server.start();
+
+            boolean running = true;
+
+            while (running){
+                String message = reader.nextLine();
+                if (message.equals("/quit")){
+                    running = false;
+                    server.stop(3);
+                    db.closeDB();
+                }
             }
-           });
 
-        
-        server.setExecutor(Executors.newCachedThreadPool());
-
-        CoordinatesDatabase db = CoordinatesDatabase.getInstance();
-        
-        db.open("coordinates.db");
-
-        server.start();
-
-        boolean running = true;
-
-        while (running){
-            String message = reader.nextLine();
-            if (message.equals("/quit")){
-                running = false;
-                server.stop(3);
-                db.closeDB();
-            }
-        }
-
-        reader.close();
+            reader.close();
 
         } catch(Exception e){
              e.printStackTrace();
@@ -81,8 +78,7 @@ public class Server {
         char[] passphrase = password.toCharArray();
         KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(new FileInputStream(keystore), passphrase);
-
-    
+  
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
         kmf.init(ks, passphrase);
     

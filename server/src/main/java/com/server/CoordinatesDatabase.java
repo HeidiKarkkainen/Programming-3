@@ -12,19 +12,18 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+
 import java.util.Base64;
 
 import java.security.SecureRandom;
 
 import org.apache.commons.codec.digest.Crypt; 
-
 import org.json.*;
 
 public class CoordinatesDatabase {
 
     private Connection dbConnection = null;
     private static CoordinatesDatabase dbInstance = null;
-    String dbName;
     boolean dbExists = false;
     SecureRandom secureRandom = new SecureRandom();
 
@@ -41,8 +40,6 @@ public class CoordinatesDatabase {
 
     public void open(String dbName) throws SQLException{
 
-        this.dbName = dbName;
-
         File file = new File(dbName);
         
         if (file.isFile()){
@@ -54,7 +51,7 @@ public class CoordinatesDatabase {
         }
 
         if (dbConnection == null) {
-            System.out.println("can't open database!");
+            System.out.println("Can't open database!");
         }
     }
     
@@ -66,7 +63,7 @@ public class CoordinatesDatabase {
 
         if (null != dbConnection){
             String createBasicDB = "create table users (username varchar(50) NOT NULL PRIMARY KEY, password varchar(50) NOT NULL, salt varchar(500) NOT NULL, email varchar(50));" +
-            "create table coordinates (username varchar(50) NOT NULL, longitude number NOT NULL, latitude number NOT NULL, time INTEGER NOT NULL, PRIMARY KEY(username, longitude, latitude, time))";
+            "create table coordinates (username varchar(50) NOT NULL, longitude number NOT NULL, latitude number NOT NULL, time INTEGER NOT NULL, description varchar(1024), PRIMARY KEY(username, longitude, latitude, time))";
             Statement createStatement = dbConnection.createStatement();
             createStatement.executeUpdate(createBasicDB);
             createStatement.close();
@@ -78,7 +75,7 @@ public class CoordinatesDatabase {
         if (null != dbConnection){
             dbConnection.close();
             dbConnection = null;
-            System.out.println("Closing db connection");
+            System.out.println("Closing database connection");
         }
     }
 
@@ -121,23 +118,22 @@ public class CoordinatesDatabase {
         try {
             queryStatement = dbConnection.createStatement();
         } catch (SQLException e) {
-            System.out.println("db connection failed");
+            System.out.println("Database connection failed");
             throw e;
         }
 
         try {
             rs = queryStatement.executeQuery(checkUser);            
         } catch (Exception e) {
-            System.out.println("query failed");
+            System.out.println("Query failed");
             throw e;
         }
 
         if(rs.next()){
             return true;
-        }else{
+        } else {
             return false;
-        }
-        
+        }      
     }
 
     public boolean authenticateUser(String givenUsername, String givenPassword) throws SQLException{
@@ -154,7 +150,7 @@ public class CoordinatesDatabase {
             return false;
         }else {
             String password = rs.getString("password");
-           if (password.equals(Crypt.crypt(givenPassword, password))) {
+            if (password.equals(Crypt.crypt(givenPassword, password))) {
                 return true;
             } else {
                 return false;
@@ -169,67 +165,47 @@ public class CoordinatesDatabase {
         long unixTime;
         String description = "";
 
-        System.out.println("setCoordinates: request: " + coordinates.toString());
-
         time = OffsetDateTime.parse(coordinates.getString("sent"), formatter);
         unixTime = time.toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli();
-       
-        // coordinates.getDouble("longitude");
-        // coordinates.getDouble("latitude");
 
-        // try {
-        //     description = coordinates.getString("description");
-        //     if (description.length() == 0){
-        //         description = "nodata";
-        //     }
-        // } catch (JSONException e) {
-        //     description = "";
-        // }
+        try {
+            description = coordinates.getString("description");
+            if (description.length() == 0){
+                description = "nodata";
+            }
+        } catch (JSONException e) {
+            description = "";
+        }
         
-        // String setCoordinatesString;
-
-        // if (description != "") {
-        //     setCoordinatesString = "insert into coordinates " +
-        //                 "VALUES('" +
-        //                 coordinates.getString("username") +
-        //                 "','" +
-        //                 coordinates.getDouble("longitude") +
-        //                 "','" +
-        //                 coordinates.getDouble("latitude") +
-        //                 "','" +
-        //                 unixTime +
-        //                 "','" +
-        //                 description +
-        //                 "')"; 
-        // } else {
-            String setCoordinatesString = "insert into coordinates " +
-            "VALUES('" +
-            coordinates.getString("username") +
-            "','" +
-            coordinates.getDouble("longitude") +
-            "','" +
-            coordinates.getDouble("latitude") +
-            "','" +
-            unixTime +
-            "')"; 
-        //}
-
+        String setCoordinatesString = "insert into coordinates " +
+                        "VALUES('" +
+                        coordinates.getString("username") +
+                        "','" +
+                        coordinates.getDouble("longitude") +
+                        "','" +
+                        coordinates.getDouble("latitude") +
+                        "','" +
+                        unixTime +
+                        "','" +
+                        description +
+                        "')"; 
+        
         Statement createStatement;
 
         try {
             createStatement = dbConnection.createStatement();
-            
         } catch (Exception e) {
-            System.out.println("setCoordinates: dbConnection.createStatement failed");
+            System.out.println("dbConnection.createStatement failed");
             throw e;
         }
+
         try {
-            createStatement.executeUpdate(setCoordinatesString);
-            
+            createStatement.executeUpdate(setCoordinatesString);         
         } catch (Exception e) {
-            System.out.println("setCoordinates: createStatement.executeUpdate failed");
+            System.out.println("createStatement.executeUpdate failed");
             throw e;
         }
+
 		createStatement.close();
     }
     
@@ -239,7 +215,7 @@ public class CoordinatesDatabase {
         
         JSONArray array = new JSONArray();
 
-        String getCoordinatesString = "select username, longitude, latitude, time from coordinates ";
+        String getCoordinatesString = "select username, longitude, latitude, time, description from coordinates ";
 
         queryStatement = dbConnection.createStatement();
 		ResultSet rs = queryStatement.executeQuery(getCoordinatesString);
@@ -249,14 +225,18 @@ public class CoordinatesDatabase {
             obj.put("username", rs.getString("username"));
             obj.put("longitude", rs.getDouble("longitude"));
             obj.put("latitude", rs.getDouble("latitude"));
-            //obj.put("description", rs.getString("description"));
             obj.put("sent", OffsetDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("time")), ZoneOffset.UTC));
-            
-            array.put(obj);
-		}
 
-        System.out.println("getCoordinates: response: " + array.toString());
-        
+            if (rs.getString("description").length() == 0) {
+                ;
+            } else if (rs.getString("description").equals("nodata")) {
+                obj.put("description", "");
+            } else {
+                obj.put("description", rs.getString("description"));
+            }     
+
+            array.put(obj);
+		}       
         return array;
 
     }
@@ -279,7 +259,7 @@ public class CoordinatesDatabase {
         endTime = OffsetDateTime.parse(timequery.getString("timeend"), formatter);
         unixTime2 = endTime.toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli();
 
-        String getCoordinatesString = "select nick, longitude, latitude, time, description from coordinates " +
+        String getCoordinatesString = "select username, longitude, latitude, time, description from coordinates " +
         "where time between '" + unixTime1 + "'AND'" + unixTime2 + "'"; 
         
         queryStatement = dbConnection.createStatement();
@@ -290,8 +270,15 @@ public class CoordinatesDatabase {
             obj.put("username", rs.getString("username"));
             obj.put("longitude", rs.getDouble("longitude"));
             obj.put("latitude", rs.getDouble("latitude"));
-            //obj.put("description", rs.getString("description"));
             obj.put("sent", OffsetDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("time")), ZoneOffset.UTC));
+
+            if (rs.getString("description").length() == 0) {
+                ;
+            } else if (rs.getString("description").equals("nodata")) {
+                obj.put("description", "");
+            } else {
+                obj.put("description", rs.getString("description"));
+            }   
             
             array.put(obj);
 		}
@@ -304,8 +291,8 @@ public class CoordinatesDatabase {
         
         JSONArray array = new JSONArray();
 
-        String getCoordinatesString = "select nick, longitude, latitude, time, description from coordinates " +
-        "where nick = '" + name + "'"; 
+        String getCoordinatesString = "select username, longitude, latitude, time, description from coordinates " +
+        "where username = '" + name + "'"; 
         
         queryStatement = dbConnection.createStatement();
 		ResultSet rs = queryStatement.executeQuery(getCoordinatesString);
@@ -315,11 +302,18 @@ public class CoordinatesDatabase {
             obj.put("username", rs.getString("username"));
             obj.put("longitude", rs.getDouble("longitude"));
             obj.put("latitude", rs.getDouble("latitude"));
-            //obj.put("description", rs.getString("description"));
-            obj.put("sent", OffsetDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("time")), ZoneOffset.UTC));            
+            obj.put("sent", OffsetDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("time")), ZoneOffset.UTC));    
+            
+            if (rs.getString("description").length() == 0) {
+                ;
+            } else if (rs.getString("description").equals("nodata")) {
+                obj.put("description", "");
+            } else {
+                obj.put("description", rs.getString("description"));
+            }   
+
             array.put(obj);
-		}
-        
+		}   
         return array;
     }
 }

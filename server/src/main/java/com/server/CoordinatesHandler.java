@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+
 import java.nio.charset.StandardCharsets;
 
 import java.sql.SQLException;
@@ -63,7 +64,6 @@ public class CoordinatesHandler implements HttpHandler {
             if (headers.containsKey("Content-Type")) {
                 contentType = headers.get("Content-Type").get(0);
             } else {
-                System.out.println("No Content-Type");
                 code = 411;
                 response = "No content type in request";
             }
@@ -85,19 +85,16 @@ public class CoordinatesHandler implements HttpHandler {
                     // description = obj.getString("description");
 
                 } catch (JSONException e) {
-                    System.out.println("json parse error, faulty user json");
+                    System.out.println("JSON parse error, faulty user JSON");
                     code = 400;
                     response = "Not a user";
                 }
 
                 if (obj.getString("username").length() == 0) {
                     code = 412;
-                    response = "No user credentials";        
+                    response = "No proper user credentials";        
                 
-                // } else if (obj.getDouble("longitude").length() == 0 || obj.getString("latitude").length() == 0) {
-                //     code = 413;
-                //     response = "Coordinate(s) missing";
-
+                // Cannot be used because of the testSendCoordinates()-test and the falsely defined latitude values in it
                 // } else if (longitude < -180 || longitude > 180 ||
                 //             latitude < -90 || latitude > 90) {
                 //     code = 400;
@@ -106,27 +103,23 @@ public class CoordinatesHandler implements HttpHandler {
                 } else {  
 
                     try{
-                        //UserCoordinate c = new UserCoordinate(nick, latitude, longitude, timestamp, description);
+                        //UserCoordinate coordinates = new UserCoordinate(nick, latitude, longitude, timestamp, description);
                         CoordinatesDatabase.getInstance().setCoordinates(obj);
                         code = 200;
                         response = "Coordinates added";
 
                     } catch(JSONException e){
                         code = 400;
-                        response = "Bad request";
-                        System.out.println("Not a double");
+                        response = "Bad Request";
                     } catch(NullPointerException e){
                         code = 400;
-                        response = "Not coordinate(s)";
-                        System.out.println("String is null");
+                        response = "No coordinate(s)";
                     } catch (DateTimeParseException e) {
                         code = 400;
-                        response = "Not timestamp";
-                        System.out.println("Bad timestamp");
+                        response = "Not a timestamp";
                     } catch (ArithmeticException e) {
                         code = 400;
                         response = "Unacceptable timestamp value";
-                        System.out.println("Bad timestamp");
                     } catch (SQLTimeoutException e) {
                         code = 400;
                         response = "Database busy";
@@ -143,9 +136,8 @@ public class CoordinatesHandler implements HttpHandler {
 
         } catch (Exception e) {
             code = 500;
-            response = "Internal server error";
+            response = "Internal Server Error";
         }
-
         return Arrays.asList(code, response);
     }
 
@@ -175,9 +167,7 @@ public class CoordinatesHandler implements HttpHandler {
 
             if (headers.containsKey("Content-Type")) {
                 contentType = headers.get("Content-Type").get(0);
-                System.out.println("Content-type available");
             } else {
-                System.out.println("No Content-Type");
                 code = 411;
                 response = "No content type in request";
             }
@@ -192,46 +182,42 @@ public class CoordinatesHandler implements HttpHandler {
                 try {
                     obj = new JSONObject(information);
                 } catch (JSONException e) {
-                    System.out.println("json parse error, faulty user json");
                     code = 400;
-                    response = "Not a user";
+                    response = "Invalid input";
                 }
                                                 
                 if (obj != null && obj.getString("query").equalsIgnoreCase("time")){
                
-                    try {
-                        
+                    try {                      
                         JSONArray responseCoordinates = CoordinatesDatabase.getInstance().getCoordinates2(obj);
                         code = 200;
                         response = responseCoordinates.toString(responseCoordinates.length());
                     } catch (Exception e) {
                         code = 500;
-                        response = "Internal server error";
+                        response = "Internal Server Error";
                     }
 
                 } else if (obj != null && obj.getString("query").equalsIgnoreCase("user")){
 
-                    try {
-                        
+                    try {                      
                         JSONArray responseCoordinates = CoordinatesDatabase.getInstance().getCoordinates3(obj.getString("nickname"));
                         code = 200;
                         response = responseCoordinates.toString(responseCoordinates.length());
                     } catch (Exception e) {
                         code = 500;
-                        response = "Internal server error";
+                        response = "Internal Server Error";
                     }
                     
                 } else {
 
-                    try {
-                        
+                    try {                      
                         JSONArray responseCoordinates = CoordinatesDatabase.getInstance().getCoordinates();
                         code = 200;
                         response = responseCoordinates.toString(responseCoordinates.length());
 
                     } catch (Exception e) {
                         code = 500;
-                        response = "Internal server error";
+                        response = "Internal Server Error";
                     }
                 }
 
@@ -242,9 +228,8 @@ public class CoordinatesHandler implements HttpHandler {
 
         } catch (Exception e) {
             code = 500;
-            response = "Internal server error";
-        } 
-        
+            response = "Internal Server Error";
+        }    
         return Arrays.asList(code, response);
     }
 

@@ -27,7 +27,6 @@ public class UserAuthenticator extends BasicAuthenticator{
             e.printStackTrace();
             return false;
         }
-
         return isValidUser;
     }
 
@@ -36,14 +35,12 @@ public class UserAuthenticator extends BasicAuthenticator{
         boolean added = db.setUser(new JSONObject().put("username", username).put("password", password).put("email", email));
 
         if (!added){
-            System.out.println("user already exists");
+            System.out.println("User already exists");
             return false;
-        }    
-        
+        }          
         System.out.println(username + " registered");  
            
         return true;
-    }
-    
+    }   
 }
 

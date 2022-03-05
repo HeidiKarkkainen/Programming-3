@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+
 import java.nio.charset.StandardCharsets;
 
 import java.util.stream.Collectors;
@@ -40,24 +41,21 @@ public class RegistrationHandler implements HttpHandler{
     
     public List<Object> handlePOSTRequest(HttpExchange exchange)throws IOException {
 
-        Headers headers = exchange.getRequestHeaders();
         String contentType = "";
         JSONObject obj = null;
         String response = "";
         int code = 0;
 
+        Headers headers = exchange.getRequestHeaders();
+
         try {
 
             if (headers.containsKey("Content-Type")){
                 contentType = headers.get("Content-Type").get(0);
-                System.out.println("Content-type available");
             } else {
-                System.out.println("No Content-Type");
                 code = 411;
                 response = "No content type in request";
             }
-
-            System.out.println("Content-type is: " + contentType);
 
             if (contentType.equalsIgnoreCase("application/json")){
                 InputStream stream = exchange.getRequestBody();
@@ -65,23 +63,20 @@ public class RegistrationHandler implements HttpHandler{
                 String newUser = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")); 
                 stream.close();
 
-                System.out.println("");
-
                 try {
                     obj = new JSONObject(newUser);                 
-                    System.out.println(obj);
                 } catch (JSONException e){
-                    System.out.println("json parse error, faulty user json");               
+                    System.out.println("JSON parse error, faulty user JSON");               
                 }
                     
                 if (obj.getString("username").length() == 0){
                     code = 412;
-                    response = "No user credentials";
+                    response = "No proper user credentials";
              
                 } else {
  
-                    if (obj.getString("username").length() == 0 || obj.getString("password").length() == 0 || obj.getString("email").length() == 0 ){
-                        code = 413;
+                    if (obj.getString("password").length() == 0 || obj.getString("email").length() == 0 ){
+                        code = 412;
                         response = "No proper user credentials";
                         
                     } else {
@@ -91,7 +86,6 @@ public class RegistrationHandler implements HttpHandler{
                         try {
                             result = auth.addUser(obj.getString("username"), obj.getString("password"), obj.getString("email"));
                         } catch (Exception e) {
-                            System.out.println("adding user SQL statement failed"); 
                             code = 500;
                             response = "Unable to add user to database";
                             return Arrays.asList(code, response);
@@ -99,7 +93,7 @@ public class RegistrationHandler implements HttpHandler{
 
                         if (result == false){
                             code = 405;
-                            response = "user already exists";
+                            response = "User already exists";
                         } else {                       
                             code = 200;
                             response = "User registered";
@@ -108,14 +102,13 @@ public class RegistrationHandler implements HttpHandler{
                 } 
             } else {
                 code = 407;
-                response = "Content type is not application/json.";
+                response = "Content type is not application/json";
             }
         
         } catch (Exception e){
             code = 500;
-            response = "internal server error";
+            response = "Internal Server Error";
         }
-
         return Arrays.asList(code, response);
     }
 
