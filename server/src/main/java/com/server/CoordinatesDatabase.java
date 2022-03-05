@@ -66,7 +66,7 @@ public class CoordinatesDatabase {
 
         if (null != dbConnection){
             String createBasicDB = "create table users (username varchar(50) NOT NULL PRIMARY KEY, password varchar(50) NOT NULL, salt varchar(500) NOT NULL, email varchar(50));" +
-            "create table coordinates (nick varchar(50) NOT NULL, longitude number NOT NULL, latitude number NOT NULL, time INTEGER NOT NULL, PRIMARY KEY(nick, longitude, latitude, time))";
+            "create table coordinates (username varchar(50) NOT NULL, longitude number NOT NULL, latitude number NOT NULL, time INTEGER NOT NULL, PRIMARY KEY(username, longitude, latitude, time))";
             Statement createStatement = dbConnection.createStatement();
             createStatement.executeUpdate(createBasicDB);
             createStatement.close();
@@ -239,14 +239,14 @@ public class CoordinatesDatabase {
         
         JSONArray array = new JSONArray();
 
-        String getCoordinatesString = "select nick, longitude, latitude, time from coordinates ";
+        String getCoordinatesString = "select username, longitude, latitude, time from coordinates ";
 
         queryStatement = dbConnection.createStatement();
 		ResultSet rs = queryStatement.executeQuery(getCoordinatesString);
 
         while (rs.next()) {
             JSONObject obj = new JSONObject();
-            obj.put("nick", rs.getString("nick"));
+            obj.put("username", rs.getString("username"));
             obj.put("longitude", rs.getDouble("longitude"));
             obj.put("latitude", rs.getDouble("latitude"));
             //obj.put("description", rs.getString("description"));
@@ -287,7 +287,7 @@ public class CoordinatesDatabase {
 
         while (rs.next()) {
             JSONObject obj = new JSONObject();
-            obj.put("nick", rs.getString("nick"));
+            obj.put("username", rs.getString("username"));
             obj.put("longitude", rs.getDouble("longitude"));
             obj.put("latitude", rs.getDouble("latitude"));
             //obj.put("description", rs.getString("description"));
@@ -312,7 +312,7 @@ public class CoordinatesDatabase {
 
         while (rs.next()) {
             JSONObject obj = new JSONObject();
-            obj.put("nick", rs.getString("nick"));
+            obj.put("username", rs.getString("username"));
             obj.put("longitude", rs.getDouble("longitude"));
             obj.put("latitude", rs.getDouble("latitude"));
             //obj.put("description", rs.getString("description"));
